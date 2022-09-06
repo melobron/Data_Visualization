@@ -1,2 +1,2 @@
-# Data_Visualization
-2022 Fall Class
+# Data_Visualization_Class (2022 Fall)
+
