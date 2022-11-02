@@ -2,6 +2,7 @@ import torch
 import torchvision.transforms as transforms
 from torchvision.utils import save_image
 
+import sys
 import os
 import argparse
 import random
@@ -10,6 +11,8 @@ import math
 import cv2
 import streamlit as st
 
+models_path = os.path.dirname(os.getcwd())
+sys.path.append(models_path)
 from models.StyleGAN2 import StyledGenerator
 
 
@@ -59,17 +62,9 @@ def transform_for_visualization(imgs, rows, cols, mean, std):
 
 
 # Streamlit Functions
-def image_generation(args):
-    # for filename in EXTERNAL_DEPENDENCIES.keys():
-
-
-
+def image_generation(args, seed):
     # Device
     device = torch.device('cuda:{}'.format(args.gpu_num))
-
-    st.title('Streamlit Random Face Generation')
-    st.sidebar.title('Random Seed')
-    seed = st.sidebar.slider(label='Random Seed', min_value=0, max_value=10000, value=5000, step=10)
 
     # Random Seed
     torch.manual_seed(seed)
@@ -79,22 +74,19 @@ def image_generation(args):
     # Model
     generator = StyledGenerator().to(device)
     # generator.load_state_dict(torch.load(opt.model_path)['g_running'])
-    generator.load_state_dict(torch.load('{}'.format(opt.model_path), map_location=device))
+    model_path = os.path.join(os.getcwd(), './pretrained', '{}'.format(args.model_name))
+    generator.load_state_dict(torch.load(model_path))
     generator.eval()
 
     # Mean Styles
     mean_style = get_mean_style(generator, device, style_mean_num=args.style_mean_num)
 
     # Parameters
-    step = int(math.log(opt.img_size, 2)) - 2
+    step = int(math.log(args.img_size, 2)) - 2
 
     # Generate samples
-    imgs = generate_samples(generator, device, n_samples=opt.n_row * opt.n_col, step=step, alpha=opt.alpha,
-                            mean_style=mean_style, style_weight=opt.style_weight)
-    tile = transform_for_visualization(imgs, rows=opt.n_row, cols=opt.n_col, mean=opt.mean, std=opt.std)
+    imgs = generate_samples(generator, device, n_samples=args.n_row * args.n_col, step=step, alpha=args.alpha,
+                            mean_style=mean_style, style_weight=args.style_weight)
+    tile = transform_for_visualization(imgs, rows=args.n_row, cols=args.n_col, mean=args.mean, std=args.std)
 
-    # Streamlit
-    st.title('Streamlit Random Face Generation')
-    st.sidebar.title('Random Seed')
-    st.image(tile, use_column_width=True)
-
+    return tile

@@ -14,6 +14,7 @@ import streamlit as st
 models_path = os.path.dirname(os.getcwd())
 sys.path.append(models_path)
 from models.StyleGAN2 import StyledGenerator
+from algorithms.image_generation import *
 
 
 ############################## Arguments ##############################
@@ -21,7 +22,7 @@ parser = argparse.ArgumentParser(description='Test StyleGAN')
 
 parser.add_argument('--gpu_num', default=0, type=int)
 parser.add_argument('--seed', default=100, type=int)
-parser.add_argument('--model_path', default='./pre-trained/Dog(FreezeD).pth', type=str)
+parser.add_argument('--model_name', default='Dog(FreezeD).pth', type=str)
 parser.add_argument('--dataset_name', default='Dog', type=str)  # FFHQ, Dog
 parser.add_argument('--img_size', default=256, type=int)  # Pre-trained model suited for 256
 
@@ -46,4 +47,12 @@ parser.add_argument('--std', type=tuple, default=(0.5, 0.5, 0.5))
 opt = parser.parse_args()
 
 
-############################## Arguments ##############################
+############################## Streamlit ##############################
+if __name__ == '__main__':
+    st.title('Image Generation')
+    st.sidebar.title('Choose Random Seed')
+
+    random_seed = st.sidebar.slider('Random Seed', 0, 100, 50, 5)
+    image = image_generation(opt, random_seed)
+
+    st.image(image/255., use_column_width=True)
