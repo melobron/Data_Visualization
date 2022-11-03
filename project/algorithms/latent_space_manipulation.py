@@ -124,7 +124,7 @@ def explore(args, seed, domain, control_params):
     step = int(math.log(args.img_size, 2)) - 2
 
     # Components
-    with open('../pickle_data/components({}).pickle'.format(domain), 'rb') as f:
+    with open('./pickle_data/components({}).pickle'.format(domain), 'rb') as f:
         data = pickle.load(f)
     components = data['components']
 
@@ -151,7 +151,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--gpu_num', default=0, type=int)
     parser.add_argument('--seed', default=100, type=int)
-    parser.add_argument('--dataset', default='Dog', type=str)  # FFHQ, AFAD, Cat, Dog
+    parser.add_argument('--dataset', default='AFAD', type=str)  # FFHQ, AFAD, Cat, Dog
     parser.add_argument('--img_size', default=256, type=int)  # Pre-trained model suited for 256
 
     # Mean Style
@@ -170,11 +170,11 @@ if __name__ == '__main__':
 
     opt = parser.parse_args()
 
-    # save_pca_components(opt)
+    save_pca_components(opt)
     # save_mean_style(opt)
 
-    # Explore
-    control_params = [0, 0, 0]
-    image = explore(opt, seed=100, domain='Dog', control_params=control_params)
-    plt.imshow(image/255.)
-    plt.show()
+    # # Explore
+    # control_params = [0, 0, 0]
+    # image = explore(opt, seed=100, domain='Dog', control_params=control_params)
+    # plt.imshow(image/255.)
+    # plt.show()

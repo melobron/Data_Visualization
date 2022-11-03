@@ -54,6 +54,7 @@ if __name__ == '__main__':
 
     control_params = []
     for i in range(5):
-        control_params.append(st.sidebar.slider('Control {}th Axis'.format(i+1), -50, 50, 0, 1))
+        control_params.append(st.sidebar.slider('Control {}th Axis'.format(i+1), -50, 50, 0, 1) / 25.)
 
     image = explore(opt, seed=random_seed, domain=domain, control_params=control_params)
+    st.image(image/255., use_column_width=True)
