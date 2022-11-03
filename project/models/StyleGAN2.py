@@ -1,3 +1,6 @@
+import sys
+import os
+
 from models.layers import *
 
 
@@ -109,6 +112,7 @@ class Generator(nn.Module):
 
         else:
             inject_index = random.sample(list(range(step)), len(style) - 1)
+            # inject_index = 0
 
         crossover = 0
 

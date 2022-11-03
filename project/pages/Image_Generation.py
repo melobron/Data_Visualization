@@ -35,10 +35,6 @@ parser.add_argument('--style_weight', default=0.7, type=float)  # 0: Mean of FFH
 parser.add_argument('--n_row', default=3, type=int)  # For Visualization
 parser.add_argument('--n_col', default=5, type=int)  # For Visualization
 
-# Style Mixing
-parser.add_argument('--n_source', default=5, type=int)  # cols
-parser.add_argument('--n_target', default=3, type=int)  # rows
-
 # Transformations
 parser.add_argument('--normalize', type=bool, default=True)
 parser.add_argument('--mean', type=tuple, default=(0.5, 0.5, 0.5))
@@ -50,7 +46,7 @@ opt = parser.parse_args()
 ############################## Streamlit ##############################
 if __name__ == '__main__':
     st.title('Image Generation')
-    st.sidebar.title('Choose Random Seed')
+    st.sidebar.title('Choose Variables')
 
     random_seed = st.sidebar.slider('Random Seed', 0, 100, 50, 5)
     image = image_generation(opt, random_seed)
