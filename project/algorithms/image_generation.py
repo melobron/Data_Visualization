@@ -98,7 +98,7 @@ def image_generation(args, seed, domain):
 
 
 @torch.no_grad()
-def style_mixing(args, seed, domain, n_source, n_target):
+def style_mixing(args, seed, domain, n_source, n_target, mixing_range):
     # Device
     device = torch.device('cuda:{}'.format(args.gpu_num))
 
@@ -110,6 +110,7 @@ def style_mixing(args, seed, domain, n_source, n_target):
     # Model
     generator = StyledGenerator().to(device)
     # generator.load_state_dict(torch.load(opt.model_path)['g_running'])
+    # model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(domain))
     model_path = os.path.join(os.getcwd(), './pretrained', '{}(FreezeD).pth'.format(domain))
     generator.load_state_dict(torch.load(model_path, map_location=device))
     generator.eval()
@@ -136,7 +137,7 @@ def style_mixing(args, seed, domain, n_source, n_target):
         imgs.append(target_imgs[i])
         mixed_imgs = generator([target_code[i].unsqueeze(0).repeat(n_source, 1), source_code],
                                step=step, alpha=args.alpha, mean_style=mean_style, style_weight=args.style_weight,
-                               mixing_range=(0, 1))
+                               mixing_range=mixing_range)
         for j in range(n_source):
             imgs.append(mixed_imgs[j])
     tile = make_tile(imgs, rows=n_target+1, cols=n_source+1)
@@ -169,6 +170,6 @@ if __name__ == '__main__':
 
     opt = parser.parse_args()
 
-    tile = image_generation(opt, seed=100, domain='Dog')
+    tile = style_mixing(args=opt, seed=100, domain='Dog', n_source=5, n_target=3, mixing_range=(0, 3))
     plt.imshow(tile/255.)
     plt.show()

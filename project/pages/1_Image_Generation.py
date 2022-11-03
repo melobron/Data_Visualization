@@ -31,9 +31,9 @@ parser.add_argument('--style_mean_num', default=10, type=int)  # Style mean calc
 parser.add_argument('--alpha', default=1, type=float)  # Fix=1: No progressive growing
 parser.add_argument('--style_weight', default=0.7, type=float)  # 0: Mean of FFHQ, 1: Independent
 
-# Style Mixing
-parser.add_argument('--n_source', default=5, type=int)  # cols
-parser.add_argument('--n_target', default=3, type=int)  # rows
+# Sample Generation
+parser.add_argument('--n_row', default=3, type=int)  # For Visualization
+parser.add_argument('--n_col', default=5, type=int)  # For Visualization
 
 # Transformations
 parser.add_argument('--normalize', type=bool, default=True)
@@ -45,12 +45,17 @@ opt = parser.parse_args()
 
 ############################## Streamlit ##############################
 if __name__ == '__main__':
-    st.title('Style Mixing')
+    st.title('Image Generation')
     st.sidebar.title('Choose Variables')
 
-    random_seed = st.sidebar.slider('Random Seed', 0, 100, 50, 5)
-    n_source = st.sidebar.slider('Number of Source Images', 1, 5, 3, 1)
-    n_target = st.sidebar.slider('Number of Target Images', 1, 5, 3, 1)
-    image = style_mixing(opt, seed=random_seed, domain=, n_source=n_source, n_target=n_target)
+    # Domain Select Box
+    domain = st.sidebar.selectbox(label='Select Domain',
+                                  options=['Dog', 'Cat', 'AFAD'])
+
+    # Random Seed Slider
+    random_seed = st.sidebar.slider('Random Seed', 0, 100, 50, 1)
+
+    # domain = st.
+    image = image_generation(opt, seed=random_seed, domain=domain)
 
     st.image(image/255., use_column_width=True)

@@ -112,7 +112,7 @@ class Generator(nn.Module):
 
         else:
             inject_index = random.sample(list(range(step)), len(style) - 1)
-            # inject_index = 0
+            # inject_index = [6]
 
         crossover = 0
 

@@ -14,7 +14,7 @@ import streamlit as st
 models_path = os.path.dirname(os.getcwd())
 sys.path.append(models_path)
 from models.StyleGAN2 import StyledGenerator
-from algorithms.image_generation import *
+from algorithms.latent_space_manipulation import *
 
 
 ############################## Arguments ##############################
@@ -31,9 +31,9 @@ parser.add_argument('--style_mean_num', default=10, type=int)  # Style mean calc
 parser.add_argument('--alpha', default=1, type=float)  # Fix=1: No progressive growing
 parser.add_argument('--style_weight', default=0.7, type=float)  # 0: Mean of FFHQ, 1: Independent
 
-# Sample Generation
-parser.add_argument('--n_row', default=3, type=int)  # For Visualization
-parser.add_argument('--n_col', default=5, type=int)  # For Visualization
+# Style Mixing
+parser.add_argument('--n_source', default=5, type=int)  # cols
+parser.add_argument('--n_target', default=3, type=int)  # rows
 
 # Transformations
 parser.add_argument('--normalize', type=bool, default=True)
@@ -45,17 +45,5 @@ opt = parser.parse_args()
 
 ############################## Streamlit ##############################
 if __name__ == '__main__':
-    st.title('Image Generation')
+    st.title('Latent Space Manipulation')
     st.sidebar.title('Choose Variables')
-
-    # Domain Select Box
-    domain = st.sidebar.selectbox(label='Select Domain',
-                                  options=['Dog', 'Cat', 'AFAD'])
-
-    # Seed Slider
-    random_seed = st.sidebar.slider('Random Seed', 0, 100, 50, 1)
-
-    # domain = st.
-    image = image_generation(opt, seed=random_seed, domain=domain)
-
-    st.image(image/255., use_column_width=True)
