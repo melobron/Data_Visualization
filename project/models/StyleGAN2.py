@@ -167,6 +167,27 @@ class StyledGenerator(nn.Module):
             self.embedding = nn.Embedding(dataset_size, embed_dim)
             self.embedding.from_pretrained(torch.zeros(dataset_size, embed_dim), freeze=False)
 
+    def get_style(self, input):
+        return self.style(input)
+
+    def forward_from_style(self, style, noise=None, step=0, alpha=-1, mean_style=None, style_weight=0, mixing_range=(-1, -1)):
+        batch = style.shape[0]
+
+        # Noise Input
+        if noise is None:
+            noise = []
+
+            for i in range(step+1):
+                size = 4 * 2 ** i
+                noise.append(torch.randn(batch, 1, size, size, device=style.device))
+
+        if mean_style is not None:
+            style = mean_style + style_weight * (style - mean_style)
+
+        style = [style]
+
+        return self.generator(style, noise, step, alpha, mixing_range=mixing_range)
+
     def forward(self, input, noise=None, step=0, alpha=-1, mean_style=None, style_weight=0, mixing_range=(-1, -1)):
         styles = []
         if type(input) not in (list, tuple):

@@ -22,8 +22,6 @@ parser = argparse.ArgumentParser(description='Test StyleGAN')
 
 parser.add_argument('--gpu_num', default=0, type=int)
 parser.add_argument('--seed', default=100, type=int)
-# parser.add_argument('--model_name', default='Dog(FreezeD).pth', type=str)
-# parser.add_argument('--dataset_name', default='Dog', type=str)  # FFHQ, Dog
 parser.add_argument('--img_size', default=256, type=int)  # Pre-trained model suited for 256
 
 # Mean Style
