@@ -96,6 +96,56 @@ def save_mean_style(args):
         pickle.dump(data, f)
 
 
+def explore(args, seed, domain, control_params):
+    # Device
+    device = torch.device('cuda:{}'.format(args.gpu_num))
+
+    # Random Seed
+    torch.manual_seed(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+
+    # Model
+    generator = StyledGenerator().to(device)
+    # model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(args.dataset))
+    model_path = os.path.join(os.getcwd(), 'pretrained', '{}(FreezeD).pth'.format(domain))
+    generator.load_state_dict(torch.load(model_path, map_location=device))
+    generator.eval()
+
+    # Style
+    latent = torch.randn(1, 512).to(device)
+    style = generator.get_style(latent)
+    style = style.detach().cpu()
+
+    # Mean Style
+    mean_style = get_mean_style(generator, device, style_mean_num=args.style_mean_num)
+
+    # Parameters
+    step = int(math.log(args.img_size, 2)) - 2
+
+    # Components
+    with open('../pickle_data/components({}).pickle'.format(domain), 'rb') as f:
+        data = pickle.load(f)
+    components = data['components']
+
+    # Explore
+    for i, c in enumerate(control_params):
+        style += components[i, :] * c
+    style = style.type(torch.FloatTensor).to(device)
+    img = generator.forward_from_style(style, step=step, alpha=args.alpha, mean_style=mean_style, style_weight=args.style_weight)
+    img = torch.squeeze(img, dim=0)
+
+    transform = transforms.Compose([
+        transforms.Normalize(mean=[-m/s for m, s in zip(args.mean, args.std)], std=[1/s for s in args.std])
+    ])
+
+    img = transform(img)
+    img = img.detach().cpu().numpy().transpose(1, 2, 0)
+    img = np.clip(img, 0., 1.) * 255.
+    img = cv2.cvtColor(img, cv2.COLOR_RGB2BGR)
+    return img
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Test StyleGAN')
 
@@ -120,5 +170,11 @@ if __name__ == '__main__':
 
     opt = parser.parse_args()
 
-    save_pca_components(opt)
-    save_mean_style(opt)
+    # save_pca_components(opt)
+    # save_mean_style(opt)
+
+    # Explore
+    control_params = [0, 0, 0]
+    image = explore(opt, seed=100, domain='Dog', control_params=control_params)
+    plt.imshow(image/255.)
+    plt.show()

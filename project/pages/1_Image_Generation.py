@@ -54,8 +54,8 @@ if __name__ == '__main__':
 
     # Random Seed Slider
     random_seed = st.sidebar.slider('Random Seed', 0, 100, 50, 1)
-
-    # domain = st.
-    image = image_generation(opt, seed=random_seed, domain=domain)
+    n_rows = st.sidebar.slider('Number of Rows', 1, 5, 3, 1)
+    n_cols = st.sidebar.slider('Number of Columns', 1, 5, 3, 1)
+    image = image_generation(opt, seed=random_seed, domain=domain, n_rows=n_rows, n_cols=n_cols)
 
     st.image(image/255., use_column_width=True)

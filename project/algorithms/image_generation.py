@@ -66,7 +66,7 @@ def make_tile(imgs, rows, cols):
 
 
 # Streamlit Functions
-def image_generation(args, seed, domain):
+def image_generation(args, seed, domain, n_rows, n_cols):
     # Device
     device = torch.device('cuda:{}'.format(args.gpu_num))
 
@@ -90,9 +90,9 @@ def image_generation(args, seed, domain):
     step = int(math.log(args.img_size, 2)) - 2
 
     # Generate samples
-    imgs = generate_samples(generator, device, n_samples=args.n_row * args.n_col, step=step, alpha=args.alpha,
+    imgs = generate_samples(generator, device, n_samples=n_rows * n_cols, step=step, alpha=args.alpha,
                             mean_style=mean_style, style_weight=args.style_weight)
-    tile = make_tile(imgs, rows=args.n_row, cols=args.n_col)
+    tile = make_tile(imgs, rows=n_rows, cols=n_cols)
     tile = transform_for_visualization(tile, mean=args.mean, std=args.std)
     return tile
 
