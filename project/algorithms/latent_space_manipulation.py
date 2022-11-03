@@ -170,7 +170,7 @@ if __name__ == '__main__':
 
     opt = parser.parse_args()
 
-    save_pca_components(opt)
+    # save_pca_components(opt)
     # save_mean_style(opt)
 
     # # Explore
