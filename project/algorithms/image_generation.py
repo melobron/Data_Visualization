@@ -66,7 +66,7 @@ def make_tile(imgs, rows, cols):
 
 
 # Streamlit Functions
-def image_generation(args, seed):
+def image_generation(args, seed, domain):
     # Device
     device = torch.device('cuda:{}'.format(args.gpu_num))
 
@@ -79,8 +79,8 @@ def image_generation(args, seed):
     generator = StyledGenerator().to(device)
     # generator.load_state_dict(torch.load(opt.model_path)['g_running'])
     # model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}'.format(args.model_name))
-    model_path = os.path.join(os.getcwd(), 'pretrained', '{}'.format(args.model_name))
-    generator.load_state_dict(torch.load(model_path))
+    model_path = os.path.join(os.getcwd(), 'pretrained', '{}(FreezeD).pth'.format(domain))
+    generator.load_state_dict(torch.load(model_path, map_location=device))
     generator.eval()
 
     # Mean Styles
@@ -98,7 +98,7 @@ def image_generation(args, seed):
 
 
 @torch.no_grad()
-def style_mixing(args, seed, n_source, n_target):
+def style_mixing(args, seed, domain, n_source, n_target):
     # Device
     device = torch.device('cuda:{}'.format(args.gpu_num))
 
@@ -110,8 +110,8 @@ def style_mixing(args, seed, n_source, n_target):
     # Model
     generator = StyledGenerator().to(device)
     # generator.load_state_dict(torch.load(opt.model_path)['g_running'])
-    model_path = os.path.join(os.getcwd(), './pretrained', '{}'.format(args.model_name))
-    generator.load_state_dict(torch.load(model_path))
+    model_path = os.path.join(os.getcwd(), './pretrained', '{}(FreezeD).pth'.format(domain))
+    generator.load_state_dict(torch.load(model_path, map_location=device))
     generator.eval()
 
     # Mean Styles
@@ -169,6 +169,6 @@ if __name__ == '__main__':
 
     opt = parser.parse_args()
 
-    tile = image_generation(opt, seed=100)
+    tile = image_generation(opt, seed=100, domain='Dog')
     plt.imshow(tile/255.)
     plt.show()

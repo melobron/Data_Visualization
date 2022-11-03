@@ -22,8 +22,8 @@ parser = argparse.ArgumentParser(description='Test StyleGAN')
 
 parser.add_argument('--gpu_num', default=0, type=int)
 parser.add_argument('--seed', default=100, type=int)
-parser.add_argument('--model_name', default='Dog(FreezeD).pth', type=str)
-parser.add_argument('--dataset_name', default='Dog', type=str)  # FFHQ, Dog
+# parser.add_argument('--model_name', default='Dog(FreezeD).pth', type=str)
+# parser.add_argument('--dataset_name', default='Dog', type=str)  # FFHQ, Dog
 parser.add_argument('--img_size', default=256, type=int)  # Pre-trained model suited for 256
 
 # Mean Style
@@ -51,6 +51,6 @@ if __name__ == '__main__':
     random_seed = st.sidebar.slider('Random Seed', 0, 100, 50, 5)
     n_source = st.sidebar.slider('Number of Source Images', 1, 5, 3, 1)
     n_target = st.sidebar.slider('Number of Target Images', 1, 5, 3, 1)
-    image = style_mixing(opt, seed=random_seed, n_source=n_source, n_target=n_target)
+    image = style_mixing(opt, seed=random_seed, domain=, n_source=n_source, n_target=n_target)
 
     st.image(image/255., use_column_width=True)
