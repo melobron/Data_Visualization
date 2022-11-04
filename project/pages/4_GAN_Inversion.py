@@ -28,7 +28,7 @@ parser.add_argument('--seed', type=int, default=100)
 
 # Inverting
 parser.add_argument('--latent_type', type=str, default='mean_style')
-parser.add_argument('--iterations', type=int, default=1000)
+parser.add_argument('--iterations', type=int, default=100000)
 parser.add_argument('--lr', type=float, default=1e-3)
 
 # Mean Style
@@ -52,7 +52,8 @@ def run(inverter, img_path):
     img_numpy = cv2.cvtColor(cv2.imread(img_path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
     latent = inverter.initial_latent(latent_type=inverter.latent_type).to(inverter.device)
     latent.requires_grad = True
-    optimizer = optim.Adam([latent], lr=inverter.lr)
+    optimizer = optim.SGD([latent], lr=inverter.lr)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10000, T_mult=2, eta_min=1e-5, last_epoch=-1)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -86,6 +87,7 @@ def run(inverter, img_path):
         image_location.image(sample/255., use_column_width=True, caption='Prediction')
         progress_bar.progress(iteration / inverter.iterations)
 
+        scheduler.step()
 
 ############################## Streamlit ##############################
 if __name__ == '__main__':
