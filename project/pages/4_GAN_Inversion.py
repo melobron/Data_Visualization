@@ -28,7 +28,7 @@ parser.add_argument('--seed', type=int, default=100)
 
 # Inverting
 parser.add_argument('--latent_type', type=str, default='mean_style')
-parser.add_argument('--iterations', type=int, default=100000)
+parser.add_argument('--iterations', type=int, default=1000)
 parser.add_argument('--lr', type=float, default=1e-3)
 
 # Mean Style

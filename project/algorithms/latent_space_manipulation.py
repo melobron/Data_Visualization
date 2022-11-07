@@ -45,7 +45,7 @@ def save_pca_components(args):
 
     # Model
     generator = StyledGenerator().to(device)
-    model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(args.dataset))
+    model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(args.domain))
     # model_path = os.path.join(os.getcwd(), 'pretrained', '{}(FreezeD).pth'.format(domain))
     generator.load_state_dict(torch.load(model_path, map_location=device))
     generator.eval()
@@ -59,15 +59,16 @@ def save_pca_components(args):
     transformer = PCA(n_components=args.n_components, svd_solver='full')
     transformer.fit(X=style)
 
-    components = transformer.components_
-    std = np.dot(components, style.T).std(axis=1)
-    idx = np.argsort(std)[::-1]
-    std = std[idx]
-    components[:] = components[idx]
-    data = {'std': std, 'components': components}
+    # components = transformer.components_
+    # std = np.dot(components, style.T).std(axis=1)
+    # idx = np.argsort(std)[::-1]
+    # std = std[idx]
+    # components[:] = components[idx]
+    # data = {'std': std, 'components': components}
+    data = transformer
 
     # Save pickle data
-    with open('../pickle_data/components({}).pickle'.format(args.dataset), 'wb') as f:
+    with open('../pickle_data/pca({}).pickle'.format(args.domain), 'wb') as f:
         pickle.dump(data, f)
 
 
@@ -82,7 +83,7 @@ def save_mean_style(args):
 
     # Model
     generator = StyledGenerator().to(device)
-    model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(args.dataset))
+    model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(args.domain))
     # model_path = os.path.join(os.getcwd(), 'pretrained', '{}(FreezeD).pth'.format(domain))
     generator.load_state_dict(torch.load(model_path, map_location=device))
     generator.eval()
@@ -92,7 +93,7 @@ def save_mean_style(args):
     data = {'mean_style': mean_style}
 
     # Save pickle data
-    with open('../pickle_data/mean_style({}).pickle'.format(args.dataset), 'wb') as f:
+    with open('../pickle_data/mean_style({}).pickle'.format(args.domain), 'wb') as f:
         pickle.dump(data, f)
 
 
@@ -107,7 +108,7 @@ def explore(args, seed, domain, control_params):
 
     # Model
     generator = StyledGenerator().to(device)
-    # model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(args.dataset))
+    # model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(domain))
     model_path = os.path.join(os.getcwd(), 'pretrained', '{}(FreezeD).pth'.format(domain))
     generator.load_state_dict(torch.load(model_path, map_location=device))
     generator.eval()
@@ -127,6 +128,13 @@ def explore(args, seed, domain, control_params):
     with open('./pickle_data/components({}).pickle'.format(domain), 'rb') as f:
         data = pickle.load(f)
     components = data['components']
+
+    # # Temporary
+    # c0 = np.array(components[0, :])
+    # old_coord = mean_style.detach().cpu().numpy()
+    # print(components.shape)
+    # new_coord = np.matmul(components, (old_coord - np.mean(old_coord)))
+    # print(new_coord)
 
     # Explore
     for i, c in enumerate(control_params):
@@ -151,7 +159,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--gpu_num', default=0, type=int)
     parser.add_argument('--seed', default=100, type=int)
-    parser.add_argument('--dataset', default='AFAD', type=str)  # FFHQ, AFAD, Cat, Dog
+    parser.add_argument('--domain', default='Dog', type=str)  # FFHQ, AFAD, Cat, Dog
     parser.add_argument('--img_size', default=256, type=int)  # Pre-trained model suited for 256
 
     # Mean Style
@@ -170,7 +178,7 @@ if __name__ == '__main__':
 
     opt = parser.parse_args()
 
-    # save_pca_components(opt)
+    save_pca_components(opt)
     # save_mean_style(opt)
 
     # # Explore
