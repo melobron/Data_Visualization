@@ -34,6 +34,31 @@ def get_mean_style(generator, device, style_mean_num):
     return mean_style
 
 
+def save_mean_style(args):
+    # Device
+    device = torch.device('cuda:{}'.format(args.gpu_num))
+
+    # Random Seed
+    torch.manual_seed(args.seed)
+    random.seed(args.seed)
+    np.random.seed(args.seed)
+
+    # Model
+    generator = StyledGenerator().to(device)
+    model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(args.domain))
+    # model_path = os.path.join(os.getcwd(), 'pretrained', '{}(FreezeD).pth'.format(domain))
+    generator.load_state_dict(torch.load(model_path, map_location=device))
+    generator.eval()
+
+    # Mean style
+    mean_style = get_mean_style(generator, device, style_mean_num=args.style_mean_num).cpu()
+    data = {'mean_style': mean_style}
+
+    # Save pickle data
+    with open('../pickle_data/mean_style({}).pickle'.format(args.domain), 'wb') as f:
+        pickle.dump(data, f)
+
+
 def save_pca_components(args):
     # Device
     device = torch.device('cuda:{}'.format(args.gpu_num))
@@ -59,41 +84,15 @@ def save_pca_components(args):
     transformer = PCA(n_components=args.n_components, svd_solver='full')
     transformer.fit(X=style)
 
-    # components = transformer.components_
-    # std = np.dot(components, style.T).std(axis=1)
-    # idx = np.argsort(std)[::-1]
-    # std = std[idx]
-    # components[:] = components[idx]
-    # data = {'std': std, 'components': components}
-    data = transformer
+    components = transformer.components_
+    std = np.dot(components, style.T).std(axis=1)
+    idx = np.argsort(std)[::-1]
+    std = std[idx]
+    components[:] = components[idx]
+    data = {'std': std, 'components': components, 'model': transformer}
 
     # Save pickle data
     with open('../pickle_data/pca({}).pickle'.format(args.domain), 'wb') as f:
-        pickle.dump(data, f)
-
-
-def save_mean_style(args):
-    # Device
-    device = torch.device('cuda:{}'.format(args.gpu_num))
-
-    # Random Seed
-    torch.manual_seed(args.seed)
-    random.seed(args.seed)
-    np.random.seed(args.seed)
-
-    # Model
-    generator = StyledGenerator().to(device)
-    model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(args.domain))
-    # model_path = os.path.join(os.getcwd(), 'pretrained', '{}(FreezeD).pth'.format(domain))
-    generator.load_state_dict(torch.load(model_path, map_location=device))
-    generator.eval()
-
-    # Mean style
-    mean_style = get_mean_style(generator, device, style_mean_num=args.style_mean_num).cpu()
-    data = {'mean_style': mean_style}
-
-    # Save pickle data
-    with open('../pickle_data/mean_style({}).pickle'.format(args.domain), 'wb') as f:
         pickle.dump(data, f)
 
 
@@ -129,13 +128,6 @@ def explore(args, seed, domain, control_params):
         data = pickle.load(f)
     components = data['components']
 
-    # # Temporary
-    # c0 = np.array(components[0, :])
-    # old_coord = mean_style.detach().cpu().numpy()
-    # print(components.shape)
-    # new_coord = np.matmul(components, (old_coord - np.mean(old_coord)))
-    # print(new_coord)
-
     # Explore
     for i, c in enumerate(control_params):
         style += components[i, :] * c
@@ -159,7 +151,7 @@ if __name__ == '__main__':
 
     parser.add_argument('--gpu_num', default=0, type=int)
     parser.add_argument('--seed', default=100, type=int)
-    parser.add_argument('--domain', default='Dog', type=str)  # FFHQ, AFAD, Cat, Dog
+    parser.add_argument('--domain', default='FFHQ', type=str)  # FFHQ, AFAD, Cat, Dog
     parser.add_argument('--img_size', default=256, type=int)  # Pre-trained model suited for 256
 
     # Mean Style

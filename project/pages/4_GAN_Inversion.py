@@ -28,8 +28,10 @@ parser.add_argument('--seed', type=int, default=100)
 
 # Inverting
 parser.add_argument('--latent_type', type=str, default='mean_style')
-parser.add_argument('--iterations', type=int, default=1000)
-parser.add_argument('--lr', type=float, default=1e-3)
+parser.add_argument('--iterations', type=int, default=10000)
+parser.add_argument('--lr', type=float, default=1e-4)
+parser.add_argument('--lpips_alpha', default=1.0, type=float)  # 0: Mean of FFHQ, 1: Independent
+parser.add_argument('--mse_beta', default=3.0, type=float)  # 0: Mean of FFHQ, 1: Independent
 
 # Mean Style
 parser.add_argument('--style_mean_num', default=10, type=int)  # Style mean calculation for Truncation trick
@@ -68,7 +70,7 @@ def run(inverter, img_path):
                                                 mean_style=inverter.mean_style, style_weight=inverter.style_weight)
         lpips_loss = inverter.lpips_criterion(decoded_img, img)
         mse_loss = inverter.MSE_criterion(decoded_img, img)
-        loss = lpips_loss + mse_loss
+        loss = inverter.lpips_alpha * lpips_loss + inverter.mse_beta * mse_loss
         loss.backward()
         optimizer.step()
 

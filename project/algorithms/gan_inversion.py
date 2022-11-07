@@ -51,6 +51,8 @@ class Inverter:
         self.style_mean_num = args.style_mean_num
         self.alpha = args.alpha
         self.style_weight = args.style_weight
+        self.lpips_alpha = args.lpips_alpha
+        self.mse_beta = args.mse_beta
 
         # Model
         self.G = StyledGenerator().to(self.device)
