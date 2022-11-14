@@ -3,6 +3,7 @@ import torchvision.transforms as transforms
 from torchvision.utils import save_image
 
 import sys
+import pickle
 import os
 import argparse
 import random
@@ -52,9 +53,14 @@ if __name__ == '__main__':
     # Random Seed Slider
     random_seed = st.sidebar.slider('Random Seed', 0, 100, 50, 1)
 
+    # Control Parameters
     control_params = []
     for i in range(5):
         control_params.append(st.sidebar.slider('Control {}th Axis'.format(i+1), -50, 50, 0, 1) / 25.)
 
-    image = explore(opt, seed=random_seed, domain=domain, control_params=control_params)
+    # Pickle data
+    with open('./pickle_data/components({}).pickle'.format(domain), 'rb') as f:
+        pickle_data = pickle.load(f)
+
+    image = explore(opt, pickle_data=pickle_data, seed=random_seed, domain=domain, control_params=control_params)
     st.image(image/255., use_column_width=True)

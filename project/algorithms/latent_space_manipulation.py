@@ -96,7 +96,7 @@ def save_pca_components(args):
         pickle.dump(data, f)
 
 
-def explore(args, seed, domain, control_params):
+def explore(args, pickle_data, seed, domain, control_params):
     # Device
     device = torch.device('cuda:{}'.format(args.gpu_num))
 
@@ -124,9 +124,7 @@ def explore(args, seed, domain, control_params):
     step = int(math.log(args.img_size, 2)) - 2
 
     # Components
-    with open('./pickle_data/components({}).pickle'.format(domain), 'rb') as f:
-        data = pickle.load(f)
-    components = data['components']
+    components = pickle_data['components']
 
     # Explore
     for i, c in enumerate(control_params):
@@ -170,7 +168,7 @@ if __name__ == '__main__':
 
     opt = parser.parse_args()
 
-    save_pca_components(opt)
+    # save_pca_components(opt)
     # save_mean_style(opt)
 
     # # Explore
