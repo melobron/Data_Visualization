@@ -1,5 +1,9 @@
 import os
+import json
+import streamlit as st
 import random
+from google.cloud import firestore
+from google.oauth2 import service_account
 
 import torch
 from torchvision.transforms import transforms
@@ -33,5 +37,21 @@ def get_transforms(args):
 
 
 ################################# Custom Schedulers #################################
+
+
+################################# DB Functions #################################
+def get_img():
+    # Authenticate to Firestore with the JSON account key.
+    key_dict = json.loads(st.secrets['textkey'])
+    creds = service_account.Credentials.from_service_account_info(key_dict)
+    db = firestore.Client(credentials=creds)
+
+    # Create a reference to the Google post.
+    doc_ref = db.collection('image').document()
+
+    # And then upload some data to that reference.
+    idx = ?
+    doc_ref.set({'id': idx, 'status': True})
+
 
 
