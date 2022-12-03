@@ -12,11 +12,13 @@ import numpy as np
 import math
 import cv2
 import streamlit as st
+import pickle
 
 models_path = os.path.dirname(os.getcwd())
 sys.path.append(models_path)
 from models.StyleGAN2 import StyledGenerator
 from algorithms.gan_inversion import *
+from algorithms.pca import *
 
 
 ############################## Arguments ##############################
@@ -29,9 +31,9 @@ parser.add_argument('--seed', type=int, default=100)
 # Inverting
 parser.add_argument('--latent_type', type=str, default='mean_style')
 parser.add_argument('--iterations', type=int, default=10000)
-parser.add_argument('--lr', type=float, default=1e-4)
-parser.add_argument('--lpips_alpha', default=1.0, type=float)  # 0: Mean of FFHQ, 1: Independent
-parser.add_argument('--mse_beta', default=3.0, type=float)  # 0: Mean of FFHQ, 1: Independent
+parser.add_argument('--lr', type=float, default=1e-3)
+parser.add_argument('--lpips_alpha', default=0.5, type=float)  # 0: Mean of FFHQ, 1: Independent
+parser.add_argument('--mse_beta', default=0.5, type=float)  # 0: Mean of FFHQ, 1: Independent
 
 # Mean Style
 parser.add_argument('--style_mean_num', default=10, type=int)  # Style mean calculation for Truncation trick
@@ -54,8 +56,8 @@ def run(inverter, img_path):
     img_numpy = cv2.cvtColor(cv2.imread(img_path, cv2.IMREAD_COLOR), cv2.COLOR_BGR2RGB)
     latent = inverter.initial_latent(latent_type=inverter.latent_type).to(inverter.device)
     latent.requires_grad = True
-    optimizer = optim.SGD([latent], lr=inverter.lr)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=10000, T_mult=2, eta_min=1e-5, last_epoch=-1)
+    optimizer = optim.Adam({latent}, lr=inverter.lr)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=400, eta_min=1e-04)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -64,6 +66,14 @@ def run(inverter, img_path):
     with col2:
         image_location = st.empty()
     progress_bar = st.empty()
+
+    coordinate = st.empty()
+    # Pickle data
+    with open('./pickle_data/pca({}).pickle'.format(domain), 'rb') as f:
+        pickle_data = pickle.load(f)
+
+    # Transformer
+    transformer = pickle_data['model']
 
     for iteration in range(1, inverter.iterations + 1):
         decoded_img = inverter.G.forward_from_style(style=latent, step=inverter.step, alpha=inverter.alpha,
@@ -89,6 +99,10 @@ def run(inverter, img_path):
         image_location.image(sample/255., use_column_width=True, caption='Prediction')
         progress_bar.progress(iteration / inverter.iterations)
 
+        coord = get_coord(latent.detach().cpu(), transformer, n_axis=3)
+        x, y, z = coord[0]
+        coordinate.markdown('Coordinate | x:{:.3f} y:{:.3f}, z:{:.3f}'.format(x, y, z))
+
         scheduler.step()
 
 ############################## Streamlit ##############################
@@ -98,23 +112,13 @@ if __name__ == '__main__':
 
     # Domain Select Box
     domain = st.sidebar.selectbox(label='Select Domain',
-                                  options=['Dog', 'Cat', 'AFAD'])
+                                  options=['Dog', 'Cat', 'AFAD', 'FFHQ'])
 
     # Sample Image Selection
     img_dir = os.path.join(os.getcwd(), 'sample_imgs/{}'.format(domain))
     img_paths = make_dataset(img_dir)
     sample_img_name = st.sidebar.selectbox(label='Select Image', options=[i for i in range(1, len(img_paths))])
 
-    # # Start Inverter button
-    # col1, col2 = st.columns(2)
-    # with col1:
-    #     start_button = st.empty()
-    #     start = start_button.button('Start', disabled=False, key='1')
-    # with col2:
-    #     reset_button = st.empty()
-    #     reset_button.button('Reset')
-
-    # st.write(start_button)
     # Inverter
     inverter = Inverter(opt, domain=domain)
     img_path = img_paths[sample_img_name]
