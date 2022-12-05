@@ -13,6 +13,8 @@ import math
 import cv2
 import streamlit as st
 import pickle
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import axes3d
 
 models_path = os.path.dirname(os.getcwd())
 sys.path.append(models_path)
@@ -30,7 +32,7 @@ parser.add_argument('--seed', type=int, default=100)
 
 # Inverting
 parser.add_argument('--latent_type', type=str, default='mean_style')
-parser.add_argument('--iterations', type=int, default=10000)
+parser.add_argument('--iterations', type=int, default=6000)
 parser.add_argument('--lr', type=float, default=1e-3)
 parser.add_argument('--lpips_alpha', default=0.5, type=float)  # 0: Mean of FFHQ, 1: Independent
 parser.add_argument('--mse_beta', default=0.5, type=float)  # 0: Mean of FFHQ, 1: Independent
@@ -57,7 +59,8 @@ def run(inverter, img_path):
     latent = inverter.initial_latent(latent_type=inverter.latent_type).to(inverter.device)
     latent.requires_grad = True
     optimizer = optim.Adam({latent}, lr=inverter.lr)
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=400, eta_min=1e-04)
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=400, eta_min=1e-04)
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingWarmRestarts(optimizer, T_0=400, T_mult=2, eta_min=1e-05)
 
     col1, col2 = st.columns(2)
     with col1:
@@ -67,7 +70,15 @@ def run(inverter, img_path):
         image_location = st.empty()
     progress_bar = st.empty()
 
+    # Show Coordinates
     coordinate = st.empty()
+
+    # 3D plot
+    fig = plt.figure()
+    # ax = fig.add_subplot(projection='3d')
+    ax = fig.add_subplot()
+    example = st.empty()
+
     # Pickle data
     with open('./pickle_data/pca({}).pickle'.format(domain), 'rb') as f:
         pickle_data = pickle.load(f)
@@ -102,6 +113,11 @@ def run(inverter, img_path):
         coord = get_coord(latent.detach().cpu(), transformer, n_axis=3)
         x, y, z = coord[0]
         coordinate.markdown('Coordinate | x:{:.3f} y:{:.3f}, z:{:.3f}'.format(x, y, z))
+
+        if iteration % 10 == 0:
+            # ax.scatter(x, y, z)
+            ax.scatter(x, y)
+            example.pyplot(fig)
 
         scheduler.step()
 
