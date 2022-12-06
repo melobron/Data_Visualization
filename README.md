@@ -1,3 +1,13 @@
+# Analyzing the Distribution of Face Images via StyleGAN based Image Generation and Inversion
+
+### 1. Image Generation
+- StyleGAN2: Analyzing and Improving the Image Quality of StyleGAN
+- Demo
+https://user-images.githubusercontent.com/67060797/205794948-38249558-e9c4-4d74-b1f5-e6c66e4a05ea.mp4
+
+
+
+
 # Data_Visualization_Class (2022 Fall)
 
 2. Data Science Pipeline and Data Collection
