@@ -14,7 +14,10 @@ import cv2
 import streamlit as st
 import pickle
 import matplotlib.pyplot as plt
+import pandas as pd
 from mpl_toolkits.mplot3d import axes3d
+from matplotlib.animation import FuncAnimation
+import plotly.express as px
 
 models_path = os.path.dirname(os.getcwd())
 sys.path.append(models_path)
@@ -74,14 +77,26 @@ def run(inverter, img_path):
     coordinate = st.empty()
 
     # 3D plot
-    fig = plt.figure()
-    # ax = fig.add_subplot(projection='3d')
-    ax = fig.add_subplot()
     example = st.empty()
+    fig, ax = plt.subplots()
+    ax.set_xlim(-7.5, 7.5)
+    ax.set_ylim(-7.5, 7.5)
+
+    if domain == 'FFHQ' or domain == 'celebs':
+        x = [2.014, 2.044, -0.451, 4.177, 2.902, 5.982, 0.561, 3.144, 7.077, 3.388]
+        y = [-3.259, -7.233, -0.840, 1.085, 2.730, 0.288, 0.290, -2.822, -2.917, 0.995]
+        name = ['sohee', 'irene', 'jennie', 'jimin', 'jihoon', 'suhyeon', 'naeun', 'suzy', 'top', 'hun']
+        ax.scatter(x, y)
+        for i, n in enumerate(name):
+            ax.annotate(n, (x[i], y[i]))
 
     # Pickle data
-    with open('./pickle_data/pca({}).pickle'.format(domain), 'rb') as f:
-        pickle_data = pickle.load(f)
+    if domain == 'celebs':
+        with open('./pickle_data/pca(FFHQ).pickle', 'rb') as f:
+            pickle_data = pickle.load(f)
+    else:
+        with open('./pickle_data/pca({}).pickle'.format(domain), 'rb') as f:
+            pickle_data = pickle.load(f)
 
     # Transformer
     transformer = pickle_data['model']
@@ -114,9 +129,9 @@ def run(inverter, img_path):
         x, y, z = coord[0]
         coordinate.markdown('Coordinate | x:{:.3f} y:{:.3f}, z:{:.3f}'.format(x, y, z))
 
-        if iteration % 10 == 0:
+        if iteration % 100 == 1:
             # ax.scatter(x, y, z)
-            ax.scatter(x, y)
+            plt.plot(x, y, 'ro')
             example.pyplot(fig)
 
         scheduler.step()
@@ -128,17 +143,32 @@ if __name__ == '__main__':
 
     # Domain Select Box
     domain = st.sidebar.selectbox(label='Select Domain',
-                                  options=['Dog', 'Cat', 'AFAD', 'FFHQ'])
+                                  options=['Dog', 'Cat', 'AFAD', 'FFHQ', 'celebs'])
 
-    # Sample Image Selection
-    img_dir = os.path.join(os.getcwd(), 'sample_imgs/{}'.format(domain))
-    img_paths = make_dataset(img_dir)
-    sample_img_name = st.sidebar.selectbox(label='Select Image', options=[i for i in range(1, len(img_paths))])
+    # STOP Button
+    reset_button = st.sidebar.button("RESET")
 
-    # Inverter
-    inverter = Inverter(opt, domain=domain)
-    img_path = img_paths[sample_img_name]
-    run(inverter=inverter, img_path=img_path)
+    if domain == 'celebs':
+        img_dir = os.path.join(os.getcwd(), 'sample_imgs/{}'.format(domain))
+        img_paths = make_dataset(img_dir)
+        names = [os.path.basename(p).split('.')[0] for p in img_paths]
+        sample_img_name = st.sidebar.selectbox(label='Select Image', options=names)
+
+        # Inverter
+        inverter = Inverter(opt, domain='FFHQ')
+        img_path = os.path.join('./sample_imgs/celebs', '{}.png'.format(sample_img_name))
+        run(inverter=inverter, img_path=img_path)
+
+    else:
+        # Sample Image Selection
+        img_dir = os.path.join(os.getcwd(), 'sample_imgs/{}'.format(domain))
+        img_paths = make_dataset(img_dir)
+        sample_img_name = st.sidebar.selectbox(label='Select Image', options=[i for i in range(1, len(img_paths))])
+
+        # Inverter
+        inverter = Inverter(opt, domain=domain)
+        img_path = img_paths[sample_img_name]
+        run(inverter=inverter, img_path=img_path)
 
 
 

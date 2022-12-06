@@ -57,7 +57,10 @@ class Inverter:
         # Model
         self.G = StyledGenerator().to(self.device)
         # model_path = os.path.join(os.path.dirname(os.getcwd()), './pretrained', '{}(FreezeD).pth'.format(args.dataset))
-        model_path = os.path.join(os.getcwd(), 'pretrained', '{}(FreezeD).pth'.format(domain))
+        if domain == 'celebs':
+            model_path = os.path.join(os.getcwd(), 'pretrained', 'FFHQ(FreezeD).pth')
+        else:
+            model_path = os.path.join(os.getcwd(), 'pretrained', '{}(FreezeD).pth'.format(domain))
         self.G.load_state_dict(torch.load(model_path, map_location=self.device))
         self.G.eval()
 
