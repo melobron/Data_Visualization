@@ -5,6 +5,7 @@
 - Demo
 https://user-images.githubusercontent.com/67060797/205794948-38249558-e9c4-4d74-b1f5-e6c66e4a05ea.mp4
 
+![Image_Generation](https://user-images.githubusercontent.com/67060797/205795471-1961f24d-5642-4a98-8e22-e4f8327a2a6e.gif)
 
 ### 2. Style Mixing
 - Demo
