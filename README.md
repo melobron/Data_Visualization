@@ -6,6 +6,11 @@
 https://user-images.githubusercontent.com/67060797/205794948-38249558-e9c4-4d74-b1f5-e6c66e4a05ea.mp4
 
 
+### 2. Style Mixing
+- Demo
+https://user-images.githubusercontent.com/67060797/205795081-d4662f2b-bf24-4e15-b19b-1b19327614fe.mp4
+
+
 
 
 # Data_Visualization_Class (2022 Fall)
